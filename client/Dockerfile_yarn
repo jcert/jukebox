@@ -1,0 +1,14 @@
+FROM node:11.3.0 as builder
+
+COPY . /app
+WORKDIR /app
+
+CMD ["yarn","run","serve"]
+
+RUN npm rebuild node-sass && yarn && yarn build --mode debug
+
+
+
+
+
+

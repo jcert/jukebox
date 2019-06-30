@@ -1,10 +1,49 @@
-version: '3'
+version: '3.5'
 services:
   client:
-    build: ./client
-    ports:
-      - 8080:80
+    build:
+      context: ./client
+      dockerfile: Dockerfile_yarn
+    volumes:
+      - app_dist:/app/dist/
+    networks:
+      - net
     depends_on:
       - server
   server:
     build: ./server
+    ports:
+      - 3000:3000
+    restart: always
+    volumes:
+      - /dev:/dev
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.config/pulse/cookie:/root/.config/pulse/cookie
+      - /run/user/1000/pulse:/run/user/1000/pulse
+      - /var/run:/var/run
+      - /run/dbus/:/run/dbus/:rw
+      - /dev/shm:/dev/shm
+    environment:
+      - PULSE_SERVER=/run/user/1000/pulse/native
+      - PULSE_COOKIE=/root/.config/pulse/cookie
+    devices:
+      - /dev/snd:/dev/snd
+    networks:
+      - net
+  jukebox:
+    image: nginx
+    depends_on:
+      - client
+    ports:
+      - 8081:80
+    networks:
+      - net
+    volumes:
+      - ./client/nginx.conf:/etc/nginx/nginx.conf
+      - app_dist:/var/www/html
+
+volumes:
+  app_dist:
+  
+networks:
+  net:
